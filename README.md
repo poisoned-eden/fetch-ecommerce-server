@@ -21,7 +21,7 @@ requirements: node.js, mysql
 ## Usage
 
 Please see this walkthrough video for instructions and examples for use.
-
+[https://drive.google.com/file/d/1oJyN3pQDs0_xsgnPPWQp5yLxjLdpN77t/view](https://drive.google.com/file/d/1oJyN3pQDs0_xsgnPPWQp5yLxjLdpN77t/view)
 
 ## Licence
 
