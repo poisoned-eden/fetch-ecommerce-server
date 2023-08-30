@@ -1,11 +1,8 @@
-// TODO
-
 const router = require('express').Router();
 const { Product, Category, Tag, ProductTag } = require('../../models');
 
 // The `/api/products` endpoint
 
-// WORKS
 // get all products
 router.get('/', async (req, res) => {
 	// find all products
@@ -20,7 +17,6 @@ router.get('/', async (req, res) => {
 	}
 });
 
-// WORKS
 // get one product
 router.get('/:id', async (req, res) => {
 	// find a single product by its `id`
@@ -43,7 +39,6 @@ router.get('/:id', async (req, res) => {
 	}
 });
 
-// WORKS
 // create new product
 router.post('/', async (req, res) => {
 	/* req.body should look like this...
@@ -68,17 +63,17 @@ router.post('/', async (req, res) => {
 			});
 
 			const productTagIds = await ProductTag.bulkCreate(productTagIdArr);
-			
+
 			res.status(200).json({ product: productData, tags: productTagIds });
+		} else {
+			// if no product tags, just respond
+			res.status(200).json(productData);
 		}
-		// if no product tags, just respond
-		res.status(200).json(productData);
 	} catch (error) {
 		res.status(500).json(error);
 	}
 });
 
-// WORKS
 // update product
 router.put('/:id', async (req, res) => {
 	// update product data
@@ -87,59 +82,60 @@ router.put('/:id', async (req, res) => {
 			where: {
 				id: req.params.id,
 			},
-		})
+		});
 		// if that id doesnt exist send 404 not found
 		if (!productData) {
 			return res.status(404).json({
 				message:
 					'No product found with that id. Try requesting all products at /api/products to find valid id options',
 			});
-		} else if (req.body.tagIds && req.body.tagIds.length) { 
+		} else if (req.body.tagIds && req.body.tagIds.length) {
 			// if product id does exist, update product tags.
 			// find all current tags for this product
 			const productTags = await ProductTag.findAll({
 				where: { product_id: req.params.id },
-			});			
+			});
 			// get all current tag id's into an array
-			const productTagIds = productTags.map(
-				({ tag_id }) => tag_id,
-			);
-				
+			const productTagIds = productTags.map(({ tag_id }) => tag_id);
+
 			// if the product doesnt already have the tag with that id, add the id to array of new ones to create ProductTag link to.
 			const newProductTags = req.body.tagIds
-				.filter(
-					(tag_id) => !productTagIds.includes(tag_id)
-				).map(
-					(tag_id) => {
-						return {
-							product_id: req.params.id,
-							tag_id,
-						}
-					}
-				);
-			
+				.filter((tag_id) => !productTagIds.includes(tag_id))
+				.map((tag_id) => {
+					return {
+						product_id: req.params.id,
+						tag_id,
+					};
+				});
+
 			// figure out which ones to remove
 			const productTagsToRemove = productTags
-				.filter(
-					({ tag_id }) => !req.body.tagIds.includes(tag_id)
-				).map(({ id }) => id);
+				.filter(({ tag_id }) => !req.body.tagIds.includes(tag_id))
+				.map(({ id }) => id);
 
-			const addedProductTags = await ProductTag.bulkCreate(newProductTags);
+			const addedProductTags = await ProductTag.bulkCreate(
+				newProductTags,
+			);
 			const removedProductTags = await ProductTag.destroy({
 				where: { id: productTagsToRemove },
 			});
-			
-			return res.status(200).json({ product: "updated", linkedTags: addedProductTags, unlinkedTags: removedProductTags });
-		} 
 
-		// if no product tags, just respond
-		res.status(200).json(productData);
+			return res
+				.status(200)
+				.json({
+					product: 'updated',
+					linkedTags: addedProductTags,
+					unlinkedTags: removedProductTags,
+				});
+		} else {
+			// if no product tags, just respond
+			res.status(200).json(productData);
+		}
 	} catch (error) {
 		res.status(500).json(error);
 	}
 });
 
-// WORKS
 router.delete('/:id', async (req, res) => {
 	// delete one product by its `id` value
 	try {
@@ -164,7 +160,7 @@ router.delete('/:id', async (req, res) => {
 			},
 		});
 
-		res.status(200).json({message: "deleted"});
+		res.status(200).json({ message: 'deleted' });
 	} catch (error) {
 		res.status(500).json(error);
 	}
